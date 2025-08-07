@@ -72,7 +72,7 @@ export const WorkflowEditTriggerManualForm = ({
       Icon: getIcon(item.icon),
     }));
 
-  const PINNED_IN_NAVBAR_OPTIONS: Array<SelectOption<boolean>> = [
+  const pinnedOpt: Array<SelectOption<boolean>> = [
     {
       label: 'Pinned',
       value: true,
@@ -137,7 +137,7 @@ export const WorkflowEditTriggerManualForm = ({
                 }
               }}
             >
-              <StyledLabel>{t`Command menu icon`}</StyledLabel>
+              <StyledLabel>{t`Command icon`}</StyledLabel>
               <SelectControl
                 isDisabled={triggerOptions.readonly}
                 selectedOption={{
@@ -170,7 +170,7 @@ export const WorkflowEditTriggerManualForm = ({
           <Select
             dropdownId={'workflow-edit-manual-trigger-object'}
             label={t`Object`}
-            description={t`Will return one ${objectType} to the next step of this workflow`}
+            description={t`On which object(s) should this trigger be available`}
             fullWidth
             value={objectType}
             options={availableMetadata}
@@ -197,7 +197,7 @@ export const WorkflowEditTriggerManualForm = ({
         <Select
           dropdownId={'workflow-edit-manual-trigger-availability'}
           label={t`Available`}
-          description={availabilityDescriptions[manualTriggerAvailability]}
+          description={t`The selected record(s) will be passed to your workflow`}
           fullWidth
           disabled={triggerOptions.readonly}
           value={manualTriggerAvailability}
@@ -222,20 +222,20 @@ export const WorkflowEditTriggerManualForm = ({
 
         <Select
           dropdownId={'workflow-edit-manual-trigger-isPinned'}
-          label={t`Pinned in Navbar`}
-          description={t`Show this trigger in the command menu navbar`}
+          label={t`Navbar`}
+          description={t`Display a button in the top navbar to trigger this workflow`}
           fullWidth
           disabled={triggerOptions.readonly}
           value={trigger.settings.isPinned ?? false}
-          options={PINNED_IN_NAVBAR_OPTIONS}
-          onChange={(newIsPinned) => {
+          options={pinnedOpt}
+          onChange={(selectedPinnedValue) => {
             if (triggerOptions.readonly === true) return;
 
             triggerOptions.onTriggerUpdate({
               ...trigger,
               settings: {
                 ...trigger.settings,
-                isPinned: newIsPinned,
+                isPinned: selectedPinnedValue,
               },
             });
           }}
