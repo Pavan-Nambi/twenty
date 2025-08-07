@@ -41,6 +41,7 @@ export const WorkflowStepDetail = ({
   steps,
   ...props
 }: WorkflowStepDetailProps) => {
+    console.log("🚨 WorkflowStepDetail props", props);
   const stepDefinition = getStepDefinitionOrThrow({
     stepId,
     trigger,

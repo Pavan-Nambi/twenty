@@ -76,6 +76,12 @@ export const useRunWorkflowRecordActions = ({
         activeWorkflowVersion.trigger?.settings.icon,
         COMMAND_MENU_DEFAULT_ICON,
       );
+console.log('onTriggerUpdate called?');
+
+
+  const isPinned = activeWorkflowVersion.trigger?.settings?.isPinned ?? false;
+
+  console.log('Workflow:', name, '| isPinned:', isPinned);
 
       return {
         type: ActionType.WorkflowRun,
@@ -85,6 +91,7 @@ export const useRunWorkflowRecordActions = ({
         position: index,
         Icon,
         shouldBeRegistered: () => true,
+        isPinned,
         component: (
           <Action
             onClick={async () => {

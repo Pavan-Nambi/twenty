@@ -1,5 +1,8 @@
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
+import { IconPicker } from '@/ui/input/components/IconPicker';
 import { Select } from '@/ui/input/components/Select';
+import { SelectControl } from '@/ui/input/components/SelectControl';
+import { GenericDropdownContentWidth } from '@/ui/layout/dropdown/constants/GenericDropdownContentWidth';
 import {
   WorkflowManualTrigger,
   WorkflowManualTriggerAvailability,
@@ -8,18 +11,15 @@ import { WorkflowStepBody } from '@/workflow/workflow-steps/components/WorkflowS
 import { WorkflowStepHeader } from '@/workflow/workflow-steps/components/WorkflowStepHeader';
 import { MANUAL_TRIGGER_AVAILABILITY_OPTIONS } from '@/workflow/workflow-trigger/constants/ManualTriggerAvailabilityOptions';
 import { getManualTriggerDefaultSettings } from '@/workflow/workflow-trigger/utils/getManualTriggerDefaultSettings';
+import { getTriggerDefaultLabel } from '@/workflow/workflow-trigger/utils/getTriggerDefaultLabel';
 import { getTriggerHeaderType } from '@/workflow/workflow-trigger/utils/getTriggerHeaderType';
 import { getTriggerIcon } from '@/workflow/workflow-trigger/utils/getTriggerIcon';
-import { getTriggerDefaultLabel } from '@/workflow/workflow-trigger/utils/getTriggerDefaultLabel';
 import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { isDefined } from 'twenty-shared/utils';
 import { useIcons } from 'twenty-ui/display';
 import { SelectOption } from 'twenty-ui/input';
-import { GenericDropdownContentWidth } from '@/ui/layout/dropdown/constants/GenericDropdownContentWidth';
-import { useLingui } from '@lingui/react/macro';
-import { IconPicker } from '@/ui/input/components/IconPicker';
-import { SelectControl } from '@/ui/input/components/SelectControl';
-import styled from '@emotion/styled';
 
 type WorkflowEditTriggerManualFormProps = {
   trigger: WorkflowManualTrigger;
@@ -72,6 +72,19 @@ export const WorkflowEditTriggerManualForm = ({
       Icon: getIcon(item.icon),
     }));
 
+  const PINNED_IN_NAVBAR_OPTIONS: Array<SelectOption<boolean>> = [
+    {
+      label: 'Pinned',
+      value: true,
+      Icon: getIcon('IconPinned'),
+    },
+    {
+      label: 'Not pinned',
+      value: false,
+      Icon: getIcon('IconPinnedOff'),
+    },
+  ];
+
   const objectType = trigger.settings.objectType;
 
   const manualTriggerAvailability: WorkflowManualTriggerAvailability =
@@ -108,30 +121,49 @@ export const WorkflowEditTriggerManualForm = ({
         disabled={triggerOptions.readonly}
       />
       <WorkflowStepBody>
-        <Select
-          dropdownId={'workflow-edit-manual-trigger-availability'}
-          label={t`Available`}
-          description={availabilityDescriptions[manualTriggerAvailability]}
-          fullWidth
+        <IconPicker
+          dropdownId={'workflow-edit-manual-trigger-icon'}
+          selectedIconKey={trigger.settings.icon}
+          dropdownOffset={{ y: -parseInt(theme.spacing(3), 10) }}
+          dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
+          maxIconsVisible={9 * 8} // 9 columns * 8 lines
           disabled={triggerOptions.readonly}
-          value={manualTriggerAvailability}
-          options={MANUAL_TRIGGER_AVAILABILITY_OPTIONS}
-          onChange={(updatedTriggerType) => {
+          clickableComponent={
+            <StyledIconPickerContainer
+              onClick={(e) => {
+                if (triggerOptions.readonly === true) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }
+              }}
+            >
+              <StyledLabel>{t`Command menu icon`}</StyledLabel>
+              <SelectControl
+                isDisabled={triggerOptions.readonly}
+                selectedOption={{
+                  Icon: getIcon(trigger.settings.icon),
+                  value: trigger.settings.icon || null,
+                  label: '',
+                }}
+              />
+              <StyledDescription>
+                {t`The icon your workflow trigger will display in the command menu`}
+              </StyledDescription>
+            </StyledIconPickerContainer>
+          }
+          onChange={({ iconKey }) => {
             if (triggerOptions.readonly === true) {
               return;
             }
 
             triggerOptions.onTriggerUpdate({
               ...trigger,
-              settings: getManualTriggerDefaultSettings({
-                availability: updatedTriggerType,
-                activeNonSystemObjectMetadataItems,
-                icon: trigger.settings.icon,
-              }),
+              settings: {
+                ...trigger.settings,
+                icon: iconKey,
+              },
             });
           }}
-          dropdownOffset={{ y: parseInt(theme.spacing(1), 10) }}
-          dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
         />
 
         {manualTriggerAvailability === 'WHEN_RECORD_SELECTED' ? (
@@ -161,47 +193,54 @@ export const WorkflowEditTriggerManualForm = ({
             dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
           />
         ) : null}
-        <IconPicker
-          dropdownId={'workflow-edit-manual-trigger-icon'}
-          selectedIconKey={trigger.settings.icon}
-          dropdownOffset={{ y: -parseInt(theme.spacing(3), 10) }}
-          dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
-          maxIconsVisible={9 * 8} // 9 columns * 8 lines
+
+        <Select
+          dropdownId={'workflow-edit-manual-trigger-availability'}
+          label={t`Available`}
+          description={availabilityDescriptions[manualTriggerAvailability]}
+          fullWidth
           disabled={triggerOptions.readonly}
-          clickableComponent={
-            <StyledIconPickerContainer
-              onClick={(e) => {
-                if (triggerOptions.readonly === true) {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }
-              }}
-            >
-              <StyledLabel>{t`Command menu icon`}</StyledLabel>
-              <SelectControl
-                isDisabled={triggerOptions.readonly}
-                selectedOption={{
-                  Icon: getIcon(trigger.settings.icon),
-                  value: trigger.settings.icon || null,
-                  label: '',
-                }}
-              />
-              <StyledDescription>{t`The icon your workflow trigger will display in the command menu`}</StyledDescription>
-            </StyledIconPickerContainer>
-          }
-          onChange={({ iconKey }) => {
+          value={manualTriggerAvailability}
+          options={MANUAL_TRIGGER_AVAILABILITY_OPTIONS}
+          onChange={(updatedTriggerType) => {
             if (triggerOptions.readonly === true) {
               return;
             }
 
             triggerOptions.onTriggerUpdate({
               ...trigger,
+              settings: getManualTriggerDefaultSettings({
+                availability: updatedTriggerType,
+                activeNonSystemObjectMetadataItems,
+                icon: trigger.settings.icon,
+              }),
+            });
+          }}
+          dropdownOffset={{ y: parseInt(theme.spacing(1), 10) }}
+          dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
+        />
+
+        <Select
+          dropdownId={'workflow-edit-manual-trigger-isPinned'}
+          label={t`Pinned in Navbar`}
+          description={t`Show this trigger in the command menu navbar`}
+          fullWidth
+          disabled={triggerOptions.readonly}
+          value={trigger.settings.isPinned ?? false}
+          options={PINNED_IN_NAVBAR_OPTIONS}
+          onChange={(newIsPinned) => {
+            if (triggerOptions.readonly === true) return;
+
+            triggerOptions.onTriggerUpdate({
+              ...trigger,
               settings: {
                 ...trigger.settings,
-                icon: iconKey,
+                isPinned: newIsPinned,
               },
             });
           }}
+          dropdownOffset={{ y: parseInt(theme.spacing(1), 10) }}
+          dropdownWidth={GenericDropdownContentWidth.ExtraLarge}
         />
       </WorkflowStepBody>
     </>

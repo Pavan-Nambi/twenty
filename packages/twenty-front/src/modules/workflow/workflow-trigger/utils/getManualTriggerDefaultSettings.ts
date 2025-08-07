@@ -15,19 +15,22 @@ export const getManualTriggerDefaultSettings = ({
   activeNonSystemObjectMetadataItems: ObjectMetadataItem[];
   icon?: string;
 }): WorkflowManualTriggerSettings => {
+  const defaultSettings = {
+    outputSchema: {},
+    icon: icon || COMMAND_MENU_DEFAULT_ICON,
+    isPinned: false,
+  };
   switch (availability) {
     case 'EVERYWHERE': {
       return {
+        ...defaultSettings,
         objectType: undefined,
-        outputSchema: {},
-        icon: icon || COMMAND_MENU_DEFAULT_ICON,
       };
     }
     case 'WHEN_RECORD_SELECTED': {
       return {
+        ...defaultSettings,
         objectType: activeNonSystemObjectMetadataItems[0].nameSingular,
-        outputSchema: {},
-        icon: icon || COMMAND_MENU_DEFAULT_ICON,
       };
     }
   }
